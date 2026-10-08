@@ -1,0 +1,32 @@
+name: Osvježi Ready
+
+# Kad se issue zatvori ili ponovno otvori, zadaci kojima su sve ovisnosti („Ovisi o”) zatvorene
+# prelaze iz Backlog u Ready u Projectu „ArtConnect - razvoj” (i obrnuto pri ponovnom otvaranju).
+on:
+  issues:
+    types: [closed, reopened, edited]
+  schedule:
+    - cron: '0 4 * * *'   # svaki dan u 4:00 UTC, kao sigurnosna provjera
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Samo prikaži promjene, ništa ne upisuj'
+        type: boolean
+        default: false
+
+concurrency:
+  group: refresh-ready
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Osvježi Status prema „Ovisi o”
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: python3 .github/scripts/refresh_ready.py ${{ inputs.dry_run && '--dry-run' || '' }}
