@@ -22,3 +22,7 @@ Workflow [Osvježi Ready](.github/workflows/refresh-ready.yml) nakon zatvaranja 
 - **Pull request:** jedan zadatak po PR-u; u opisu `Closes #broj` (broj issuea).
 - **Pregled:** svaki PR treba 1 odobrenje, i to od osobe koja nije autor. Recenzent stvarno pročita i isproba promjenu; autor odredi konkretnog recenzenta.
 - **Tajne** (`.env`, ključevi, tokeni) nikad ne idu u repozitorij.
+
+## Predložak
+
+Struktura dokumentacije i workflow za PlantUML temelje se na [predlošku kolegija Programsko inženjerstvo](https://github.com/VladoSruk/Programsko-inzenjerstvo) (autor Vlado Sruk, CC BY-NC-SA 4.0).

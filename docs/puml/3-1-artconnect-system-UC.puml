@@ -1,0 +1,28 @@
+@startuml
+' Probni dijagram obrazaca uporabe (DOC-05). Proširuje se kad se razradi poglavlje 3.
+left to right direction
+
+actor Umjetnik
+actor Organizator
+actor Administrator
+
+rectangle ArtConnect {
+  usecase "Prijava Googleom" as UC1
+  usecase "Uređivanje portfolija" as UC2
+  usecase "Pretraživanje prilika" as UC3
+  usecase "Prijava na priliku" as UC4
+  usecase "Objava prilike" as UC5
+  usecase "Odluka o prijavi" as UC6
+  usecase "Upravljanje korisnicima" as UC7
+}
+
+Umjetnik --> UC1
+Umjetnik --> UC2
+Umjetnik --> UC3
+Umjetnik --> UC4
+Organizator --> UC1
+Organizator --> UC5
+Organizator --> UC6
+Administrator --> UC1
+Administrator --> UC7
+@enduml
