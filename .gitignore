@@ -10,6 +10,11 @@ target/
 *.class
 HELP.md
 
+# Node / Vite
+node_modules/
+dist/
+coverage/
+
 # IDE
 .idea/
 *.iml
