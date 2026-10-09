@@ -12,3 +12,13 @@ Projekt iz kolegija Programsko inženjerstvo (FER, 2026./2027.): web aplikacija 
 ## Automatizacija
 
 Workflow [Osvježi Ready](.github/workflows/refresh-ready.yml) nakon zatvaranja ili ponovnog otvaranja issuea prebacuje zadatke iz Backlog u Ready kad su zatvoreni svi zadaci iz njihovog retka „Ovisi o” (i obrnuto). Treba tajnu repozitorija `PROJECT_TOKEN`: classic token s pravom `project`.
+
+## Doprinos
+
+`master` je stabilna grana i ocjenjuje se njezino stanje. Promjene ulaze isključivo kroz pull requestove.
+
+- **Grane:** `prefiks/kod-zadatka`, malim slovima, uz broj podzadatka ako ga ima, npr. `feature/auth-01-be1`. Prefiks je obično `feature`, a prema vrsti promjene može biti i `fix`, `docs`, `chore`…
+- **Commit poruke:** `tip: poruka` na hrvatskom, npr. `fix: ispravi preusmjeravanje nakon prijave`. Tipovi: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`.
+- **Pull request:** jedan zadatak po PR-u; u opisu `Closes #broj` (broj issuea).
+- **Pregled:** svaki PR treba 2 odobrenja.
+- **Tajne** (`.env`, ključevi, tokeni) nikad ne idu u repozitorij.

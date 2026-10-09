@@ -1,0 +1,15 @@
+# Tajne i okruženje
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Datoteke operacijskog sustava
+.DS_Store
+Thumbs.db
