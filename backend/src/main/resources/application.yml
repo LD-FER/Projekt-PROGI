@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: ArtConnect
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/artconnect}
+    username: ${DB_USER:artconnect}
+    password: ${DB_PASSWORD:artconnect}
+  session:
+    jdbc:
+      initialize-schema: always

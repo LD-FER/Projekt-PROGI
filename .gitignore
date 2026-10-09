@@ -5,6 +5,11 @@
 *.pem
 *.key
 
+# Java / Maven
+target/
+*.class
+HELP.md
+
 # IDE
 .idea/
 *.iml
