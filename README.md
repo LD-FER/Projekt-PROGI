@@ -17,8 +17,8 @@ Workflow [Osvježi Ready](.github/workflows/refresh-ready.yml) nakon zatvaranja 
 
 `master` je stabilna grana i ocjenjuje se njezino stanje. Promjene ulaze isključivo kroz pull requestove.
 
-- **Grane:** `prefiks/kod-zadatka`, malim slovima, uz broj podzadatka ako ga ima, npr. `feature/auth-01-be1`. Prefiks je obično `feature`, a prema vrsti promjene može biti i `fix`, `docs`, `chore`…
+- **Grane:** `prefiks/KOD-ZADATKA`, uz broj podzadatka ako ga ima, npr. `feature/AUTH-01-BE1`. Prefiks je obično `feature`, a prema vrsti promjene može biti i `fix`, `docs`, `chore`…
 - **Commit poruke:** `tip: poruka` na hrvatskom, npr. `fix: ispravi preusmjeravanje nakon prijave`. Tipovi: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`.
 - **Pull request:** jedan zadatak po PR-u; u opisu `Closes #broj` (broj issuea).
-- **Pregled:** svaki PR treba 2 odobrenja.
+- **Pregled:** svaki PR treba 1 odobrenje, i to od osobe koja nije autor. Recenzent stvarno pročita i isproba promjenu; autor odredi konkretnog recenzenta.
 - **Tajne** (`.env`, ključevi, tokeni) nikad ne idu u repozitorij.
