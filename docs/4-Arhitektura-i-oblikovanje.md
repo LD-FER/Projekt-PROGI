@@ -52,9 +52,10 @@ Objasnite glavne arhitekturne odluke bez ponavljanja popisa tehnologija. Ako va�
 | Komponenta | Odgovornost | Razlog za ovu granicu |
 | --- | --- | --- |
 | Poslužiteljska aplikacija (`backend/`, Spring Boot 4, Java 25) | REST API pod `/api/v1`, poslovna pravila, prijava i sesija, ovlaštenja, zakazani poslovi | Jedna aplikacija koja se postavlja kao cjelina; moduli su paketi unutar nje, a ne zasebne usluge. |
+| Klijentski dio (`frontend/`, React + Vite + TypeScript) | Korisničko sučelje u pregledniku; poziva API preko `src/api/client.ts` | Prikaz i interakcija odvojeni su od poslovnih pravila; u produkciji ga Caddy servira kao statičke datoteke. |
 | Baza podataka (PostgreSQL 17) | Trajni podaci aplikacije i sesije korisnika (Spring Session JDBC) | Podaci imaju jasne relacijske veze (korisnik, prilika, prijava); shemu verzionira Liquibase. |
 
-Klijentski dio (`frontend/`) i vanjske usluge (Google prijava, OpenStreetMap) dodaju se uz FND-06-FE1 i DOC-13.
+Vanjske usluge (Google prijava, OpenStreetMap) dodaje DOC-13.
 
 ### Backend: moduli i slojevi
 
@@ -86,6 +87,21 @@ Unutar svakog modula kod je podijeljen u tri sloja:
 | Domena | `domain` | JPA entiteti i repozitoriji | Pristup bazi; bez znanja o HTTP-u. |
 
 Ovisnosti idu prema dolje: web → servis → domena.
+
+### Frontend: struktura
+
+React aplikacija u `frontend/src/`, organizirana **po značajki**: sve što pripada jednoj funkcionalnosti (stranice, komponente, hookovi za API) je na jednom mjestu. Zasad postoje API klijent i prazni direktoriji; ostalo se puni uz zadatke epika.
+
+| Mjesto | Sadržaj |
+| --- | --- |
+| `main.tsx`, `App.tsx` | Ulazna točka i korijenska komponenta |
+| `api/client.ts` | `apiFetch`: osnovna adresa `/api/v1`, kolačić sesije, CSRF zaglavlje `X-XSRF-TOKEN` na zahtjevima koji mijenjaju stanje, slanje JSON-a, pretvaranje svake greške (API, mreža, neočekivan odgovor) u `ApiError` |
+| `app/` | Postavke aplikacije: router (`router.tsx`) i TanStack Query (`queryClient.ts`) |
+| `features/<značajka>/` | Stranice, komponente i hookovi jedne funkcionalnosti, npr. `features/opportunities/` |
+| `components/` | Zajedničke komponente sučelja (izgled, stanja učitavanja i greške) |
+| `i18n/hr.ts` | Svi tekstovi sučelja na hrvatskom |
+
+Svi pozivi backenda idu kroz `apiFetch` iz `api/client.ts`, nikad kroz vlastiti `fetch`, kako bi CSRF i obrada grešaka bili na jednom mjestu. Putanje, polja i kodovi grešaka uzimaju se iz API dokumentacije tima.
 
 <details>
 <summary><strong>Granica sustava, odgovornosti i vanjske ovisnosti</strong></summary>

@@ -86,7 +86,17 @@ cd backend
 
 Provjera: <http://localhost:8080/actuator/health> vraća `{"status":"UP"}`, što znači da je backend pokrenut i spojen na bazu. Testovi: `./mvnw verify` (Docker mora raditi jer testovi podižu vlastitu PostgreSQL bazu kroz Testcontainers).
 
-Frontend: [HOW_TO_RUN.md, odjeljak Frontend](../HOW_TO_RUN.md#3-frontend) (dopunjuje FND-06-FE1).
+**5. Pokretanje frontenda i provjera**
+
+```bash
+cd frontend
+npm install
+npm run dev               # http://localhost:5173
+```
+
+Vite u razvoju prosljeđuje `/api`, `/oauth2`, `/login/oauth2` i `/actuator` na backend (`frontend/vite.config.ts`), pa preglednik vidi jednu domenu kao i u produkciji; backend mora biti pokrenut. Provjera veze s backendom: <http://localhost:5173/actuator/health> (adresa frontenda) vraća `{"status":"UP"}`, što znači da proxy prosljeđuje zahtjeve backendu.
+
+Ostale naredbe: `npm test` (Vitest), `npm run lint`, `npm run typecheck`, `npm run build`.
 
 **Ako nešto ne radi:** greške backenda su u terminalu u kojem je pokrenut; stanje baze `docker compose ps` i `docker compose logs db`. Česti problemi: [HOW_TO_RUN.md, Mogući problemi](../HOW_TO_RUN.md#mogući-problemi).
 
