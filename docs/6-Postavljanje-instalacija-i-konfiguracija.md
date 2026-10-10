@@ -65,7 +65,9 @@ cd Projekt-PROGI
 
 **2. Konfiguracija**
 
-Backend čita vezu s bazom iz varijabli `DB_URL`, `DB_USER` i `DB_PASSWORD` (`backend/src/main/resources/application.yml`). Zadane vrijednosti (baza, korisnik i lozinka `artconnect` na `localhost:5432`) odgovaraju `docker-compose.yml`, pa za lokalni rad `.env` nije potreban. Za druge vrijednosti: `cp .env.example .env`, izmijenite i backend pokrenite s istim `DB_*` varijablama. Tajne (npr. Google OAuth ključevi) daje voditelj tima i nikad ne idu u repozitorij.
+Backend čita vezu s bazom iz varijabli `DB_URL`, `DB_USER` i `DB_PASSWORD` (`backend/src/main/resources/application.yml`). Zadane vrijednosti (baza, korisnik i lozinka `artconnect` na `localhost:5432`) odgovaraju `docker-compose.yml`, pa za lokalni rad `.env` nije potreban. Za druge vrijednosti: `cp .env.example .env`, izmijenite i backend pokrenite s istim `DB_*` varijablama. Tajne nikad ne idu u repozitorij.
+
+**Google OAuth.** Lokalno ga treba samo tko radi na samoj prijavi; za sav ostali rad prijava u profilu `dev` ide preko `POST /api/v1/dev/login-as` s testnim korisnicima. Tko radi na Google prijavi, od voditelja tima dobiva `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET` jednokratnim linkom i upisuje ih u svoj `.env`, a svoj Google e-mail mora imati na popisu *Test users* (aplikacija je u načinu *Testing*). Redirect URI za lokalni rad je `http://localhost:5173/login/oauth2/code/google`. Postavke klijenta i postupak: [HOW_TO_RUN.md, Google OAuth](../HOW_TO_RUN.md#google-oauth).
 
 **3. Baza i migracije**
 

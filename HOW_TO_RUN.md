@@ -165,17 +165,27 @@ docker compose -f docker-compose.prod.yml down              # zaustavi (podaci o
 5. **HTTPS:** u `.env` na serveru postavite `SITE_ADDRESS=artconnect-fer.duckdns.org` i pokrenite `docker compose -f docker-compose.prod.yml up -d`. Caddy sam nabavi certifikat od Let's Encrypta; treba mu otvoren **port 80 i 443** i DNS koji već pokazuje na instancu. Certifikat je u volumenu `caddy-data`, pa **nemojte raditi `down -v`** (briše i certifikat i bazu).
 6. Nakon svakog Stop/Start instance servis opet javi novu IP; ako stranica nekoliko minuta ne radi, provjerite `journalctl -u duckdns.service`.
 
-## Google OAuth (kad backend dobije prijavu)
+## Google OAuth
 
-> **Status:** još nije postavljeno (zadatak FND-13). Backend zasad nema OAuth konfiguraciju.
+> **Status:** Google Cloud projekt „ArtConnect” i OAuth klijent postoje (FND-13); vlasnik je voditelj tima. Backend ih koristi kad dobije Google prijavu (AUTH-01-BE1).
 
-1. <https://console.cloud.google.com> → novi projekt.
-2. **APIs & Services → OAuth consent screen:** tip *External*, status *Testing*. U **Test users** dodajte e-mail adrese svih članova tima (tko nije na popisu, ne može se prijaviti).
-3. **Credentials → Create credentials → OAuth client ID → Web application**, *Authorized redirect URIs*:
-   - lokalno: `http://localhost:5173/login/oauth2/code/google` (zahtjev ide kroz Vite proxy)
-   - EC2: `https://artconnect-fer.duckdns.org/login/oauth2/code/google`
-4. **Client ID** i **Client secret** idu u `.env` (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, vidi `.env.example`), **nikad u repozitorij**. Backend ih čita tek kad se doda OAuth konfiguracija.
-5. Rizik koji treba rano provjeriti: Google na zaslonu pristanka ponekad ne prihvaća poddomene tuđih domena (`duckdns.org`). Probajte dodati redirect URI čim domena radi, prije nego se na to osloni više posla.
+**Treba li vam Google prijava lokalno?**
+- **Radite na samoj prijavi** (AUTH-01-BE1, AUTH-01-FE, ručna provjera prijave): **da**. Trebate `GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET` u svom `.env` i svoj Google e-mail na popisu *Test users* (postupak niže).
+- **Sav ostali rad** (portfolio, prilike, prijave, rezultati, administracija…): **ne**. Trebate samo biti prijavljeni kao neka uloga, a za to lokalno (profil `dev`) postoji zamjenska prijava `POST /api/v1/dev/login-as` s testnim korisnicima (`umjetnik@artconnect.test`, `organizator@artconnect.test`, `admin@artconnect.test`, `novi@artconnect.test`); dolazi uz AUTH zadatke. Tako se prijavljuju i Selenium testovi. Na EC2 (profil `prod`) zamjenska prijava ne postoji, ondje se prijavljuje samo Googleom.
+
+**Kako se dobiva pristup:**
+- **Google e-mail u Test users:** aplikacija je u načinu *Testing*, pa se Googleom može prijaviti samo tko je na popisu. Javite voditelju tima Google račun kojim se želite prijavljivati (lokalno ili na javnoj adresi).
+- **`GOOGLE_CLIENT_ID` i `GOOGLE_CLIENT_SECRET`:** daje voditelj tima na zahtjev, **jednokratnim linkom** koji se briše nakon otvaranja (npr. Bitwarden Send, onetimesecret.com), nikad običnom porukom na Discordu.
+- Vrijednosti upišite u svoj `.env` (`cp .env.example .env`, pa maknite `#` ispred Google redaka). `.env` je u `.gitignore` i **nikad ne ide u repozitorij**.
+
+**Postavke klijenta** (Google Cloud konzola → Google Auth Platform):
+- Audience: *External*, status *Testing*; scopes `openid`, `email`, `profile`.
+- Client: *Web application*, Authorized JavaScript origins `http://localhost:5173` i `https://artconnect-fer.duckdns.org`; Authorized redirect URIs:
+  - lokalno: `http://localhost:5173/login/oauth2/code/google` (zahtjev ide kroz Vite proxy)
+  - EC2: `https://artconnect-fer.duckdns.org/login/oauth2/code/google`
+- Client secret se u konzoli vidi samo pri izradi; ako se izgubi, napravi se novi i proslijedi onima koji ga koriste.
+
+Spring Boot `.env` ne čita sam (čita ga samo Docker Compose). Kad backend dobije Google prijavu, varijable mu se predaju pri pokretanju, npr. `set -a; source ../.env; set +a` prije `./mvnw spring-boot:run` ili kroz IntelliJ run konfiguraciju. Na EC2 su u `.env` poslužitelja.
 
 ## Mogući problemi
 
