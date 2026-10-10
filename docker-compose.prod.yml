@@ -1,0 +1,56 @@
+# Produkcija (EC2): baza + backend + Caddy (servira frontend i proxya API).
+# Pokretanje: docker compose -f docker-compose.prod.yml up -d --build
+# Prije toga: napraviti .env (iz .env.example) i izgraditi frontend (npm run build).
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:?postavi DB_NAME u .env}
+      POSTGRES_USER: ${DB_USER:?postavi DB_USER u .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?postavi DB_PASSWORD u .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # port se namjerno ne izlaže prema van
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # iza Caddyja: koristi X-Forwarded-* zaglavlja (OAuth redirecti, HTTPS)
+      SERVER_FORWARD_HEADERS_STRATEGY: native
+      # preskače changesete s kontekstom "dev" (demo podaci)
+      SPRING_LIQUIBASE_CONTEXTS: prod
+    # port se namjerno ne izlaže prema van, dostupan je samo Caddyju
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:
