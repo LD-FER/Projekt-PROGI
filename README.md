@@ -4,6 +4,7 @@ Projekt iz kolegija Programsko inženjerstvo (FER, 2026./2027.): web aplikacija 
 
 - **Zadaci:** [Issues](https://github.com/LD-FER/Projekt-PROGI/issues), faze kao [Milestones](https://github.com/LD-FER/Projekt-PROGI/milestones)
 - **Ploča:** [ArtConnect - razvoj](https://github.com/users/LD-FER/projects/5); pogled „Za preuzimanje” prikazuje slobodne zadatke redom rada
+- **Kvaliteta koda:** [SonarCloud](https://sonarcloud.io/project/overview?id=LD-FER_Projekt-PROGI), pregled u pozadini (jednom tjedno), ne utječe na pull requestove
 
 ## Kako pokrenuti
 
