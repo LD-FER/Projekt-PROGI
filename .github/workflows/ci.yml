@@ -1,0 +1,58 @@
+name: CI
+
+# Provjera na svakom pull requestu i nakon spajanja u master:
+# backend (build + testovi) i frontend (lint, tipovi, testovi, build).
+# SonarCloud i obavezna provjera u zaštiti grane dodaju se naknadno (FND-08).
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # na PR-u novi push prekida staru provjeru; na masteru se provjere ne prekidaju
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      # Testcontainers koristi Docker koji je već na runneru
+      - name: Build i testovi
+        run: ./mvnw -B verify
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Provjera tipova
+        run: npm run typecheck
+      - name: Testovi
+        run: npm test
+      - name: Build
+        run: npm run build
