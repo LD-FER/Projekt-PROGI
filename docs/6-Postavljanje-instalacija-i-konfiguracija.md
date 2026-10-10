@@ -51,7 +51,6 @@ Korak po korak postupak s naredbama je u [HOW_TO_RUN.md](../HOW_TO_RUN.md#lokaln
 **1. Preduvjeti**
 
 | Alat | Verzija | Za što |
-| --- | --- | --- |
 | Docker + Docker Compose | najnovija | lokalna baza i Testcontainers testovi |
 | JDK | 25 (Eclipse Temurin) | backend; Maven se ne instalira, koristi se `./mvnw` |
 | Node.js + npm | 22 | frontend |
@@ -162,7 +161,6 @@ Ako se adresa poslužiteljskog dijela razlikuje od `http://localhost:8080`, kori
 **Cilj:** Dokumentirati točne korake za ponovljivo postavljanje cjelovitog programskog sustava na produkcijsku infrastrukturu u oblaku, uključujući smještenu bazu podataka i veze među postavljenim dijelovima. Kada je jasnije, povežite konfiguraciju koja već postoji u Gitu umjesto njezina prepisivanja.
 
 | **Postavljeni podsustav** | **Infrastruktura i izvor koda** | **Naredbe izgradnje i pokretanja** | **Konfiguracija i varijable okruženja** |
-| --- | --- | --- | --- |
 | **Klijentski dio** | [Usluga smještaja, grana i putanja mape] | [Naredba izgradnje i izlazni direktorij] | [Javne varijable vidljive pregledniku] |
 | **Poslužiteljski dio** | [Usluga smještaja, grana i putanja mape] | [Naredba izgradnje i naredba pokretanja] | [Port, veza s bazom podataka, tajni ključevi] |
 | **Baza podataka** | [Upravljana baza podataka i regija smještaja] | [Mehanizam izvođenja migracija sheme i trenutak uspostavljanja sheme] | [Zaštićeni pristupni podaci baze] |
@@ -185,6 +183,18 @@ U tablici i opisu navedite **nazive i svrhu** varijabli, gdje ovlašteni održav
 - **Sigurnosne kopije i oporavak:** [Dokumentirajte samo ako ga je tim stvarno konfigurirao i koristio.]
 
 Opisujte samo okruženja i automatizirane postupke koji stvarno postoje. Okruženje za pripremu, kontinuirana integracija (CI), kontinuirana isporuka ili kontinuirano postavljanje (CD), krajnja točka za provjeru stanja, sigurnosne kopije i druge operativne mogućnosti navode se samo ako ih tim stvarno koristi.
+
+### Google OAuth na javnoj adresi
+
+Na poslužitelju (profil `prod`) prijava ide isključivo Googleom; zamjenska prijava `dev/login-as` ne postoji.
+
+| Postavka | Vrijednost | Gdje se postavlja |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | iz OAuth klijenta u Google Cloud projektu „ArtConnect” | `.env` na poslužitelju, uz ostale tajne (nikad u repozitorij); vrijednosti ima voditelj tima. Backendu ih prosljeđuje `docker-compose.prod.yml` (`environment` servisa `backend`, dodaje se uz AUTH-01-BE1) |
+| Authorized redirect URI | `https://artconnect-fer.duckdns.org/login/oauth2/code/google` | Google Cloud konzola → Google Auth Platform → Clients (već postavljeno) |
+| Authorized JavaScript origin | `https://artconnect-fer.duckdns.org` | isto (već postavljeno) |
+| Tko se može prijaviti | samo korisnici na popisu *Test users* (aplikacija je u načinu *Testing*, najviše 100 korisnika) | Google Auth Platform → Audience; asistentici i nastavniku za ocjenjivanje treba dodati njihove Google e-mailove |
+
+Backend iza Caddyja koristi zaglavlja `X-Forwarded-*` (`SERVER_FORWARD_HEADERS_STRATEGY: native` u `docker-compose.prod.yml`), pa Googleu šalje HTTPS redirect URI javne domene. Ako se domena promijeni, novi redirect URI i origin dodaju se u Google konzolu prije prebacivanja. Lokalna konfiguracija: §6.2 i [HOW_TO_RUN.md, Google OAuth](../HOW_TO_RUN.md#google-oauth).
 <details>
 <summary><strong>Primjer konfiguriranja statičkog web-mjesta, poslužiteljskog dijela i baze podataka na Renderu</strong></summary>
 
