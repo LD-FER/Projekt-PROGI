@@ -1,0 +1,39 @@
+name: SonarCloud
+
+# Pregled kvalitete koda u pozadini: samo grana master, ručno ili jednom tjedno.
+# Namjerno bez pull_request i push okidača, pa na PR-ovima nema ni provjere ni komentara.
+# Rezultati: https://sonarcloud.io/project/overview?id=LD-FER_Projekt-PROGI
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0'   # svake nedjelje u 3:00 UTC
+
+concurrency:
+  group: sonar
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sonar:
+    name: Analiza
+    # Free plan analizira samo glavnu granu
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # puna povijest za točan "new code"
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Build i testovi (za pokrivenost)
+        working-directory: backend
+        run: ./mvnw -B verify
+      - name: SonarCloud analiza
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
