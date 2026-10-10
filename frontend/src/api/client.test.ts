@@ -29,7 +29,7 @@ describe('apiFetch', () => {
     const result = await apiFetch('/opportunities', { method: 'POST' })
 
     expect(fetchMock.mock.calls[0][0]).toBe('/api/v1/opportunities')
-    expect(sentHeaders().get('X-XSRF-TOKEN')).toBe('abc123')
+    expect(sentHeaders().get('X-XSRF-TOKEN')).toBe('krivo')
     expect(sentInit().credentials).toBe('include')
     expect(result).toBeUndefined()
   })
