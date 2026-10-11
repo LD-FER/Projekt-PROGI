@@ -1,0 +1,108 @@
+name: Server
+
+# Paljenje i gašenje produkcijskog poslužitelja (EC2) za cijeli tim, bez AWS računa:
+# Actions → Server → Run workflow → start / stop / status.
+# Svaku noć poslužitelj se sam ugasi ako je ostao upaljen (zaštita AWS kredita).
+# U razdobljima kad mora stalno raditi postavite repo varijablu ALWAYS_ON=true.
+# Prijava u AWS ključem IAM korisnika koji smije samo start/stop/status ove instance
+# (OIDC nije dostupan na našem AWS računu).
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Što napraviti s poslužiteljem'
+        type: choice
+        options: [status, start, stop]
+        default: status
+  schedule:
+    - cron: '0 1 * * *'   # svaku noć u 1:00 UTC (2:00 zimi, 3:00 ljeti)
+
+concurrency:
+  group: server
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    name: Poslužitelj
+    # Noćno gašenje se preskače kad je ALWAYS_ON=true
+    if: github.event_name != 'schedule' || vars.ALWAYS_ON != 'true'
+    runs-on: ubuntu-latest
+    env:
+      ACTION: ${{ github.event_name == 'schedule' && 'stop' || inputs.action }}
+      WHO: ${{ github.event_name == 'schedule' && 'noćno gašenje' || github.actor }}
+      INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+      SITE: https://artconnect-fer.duckdns.org
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      - name: ${{ github.event_name == 'schedule' && 'Noćno gašenje' || inputs.action }}
+        run: |
+          state() {
+            aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
+              --query 'Reservations[0].Instances[0].State.Name' --output text
+          }
+          ip() {
+            aws ec2 describe-instances --instance-ids "$INSTANCE_ID" \
+              --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
+          }
+
+          before=$(state)
+          echo "Stanje prije: $before"
+          msg=""
+
+          case "$ACTION" in
+            status)
+              msg="Poslužitelj je **$before**."
+              ;;
+            start)
+              if [ "$before" = "running" ] || [ "$before" = "pending" ]; then
+                msg="Poslužitelj je već upaljen."
+              else
+                if [ "$before" = "stopping" ]; then
+                  echo "Čekam da se poslužitelj ugasi do kraja..."
+                  aws ec2 wait instance-stopped --instance-ids "$INSTANCE_ID"
+                fi
+                aws ec2 start-instances --instance-ids "$INSTANCE_ID" >/dev/null
+                aws ec2 wait instance-running --instance-ids "$INSTANCE_ID"
+                msg="Poslužitelj je upaljen. Stranica radi za 1–2 minute na $SITE"
+              fi
+              ;;
+            stop)
+              if [ "$before" = "running" ] || [ "$before" = "pending" ]; then
+                aws ec2 stop-instances --instance-ids "$INSTANCE_ID" >/dev/null
+                aws ec2 wait instance-stopped --instance-ids "$INSTANCE_ID"
+                msg="Poslužitelj je ugašen."
+              else
+                msg="Poslužitelj nije upaljen ($before), nema što gasiti."
+              fi
+              ;;
+            *)
+              echo "Nepoznata akcija: $ACTION" >&2
+              exit 1
+              ;;
+          esac
+
+          after=$(state)
+          echo "$msg"
+          {
+            echo "### Poslužitelj: $ACTION"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Pokrenuo | $WHO |"
+            echo "| Stanje prije | $before |"
+            echo "| Stanje sada | $after |"
+            if [ "$after" = "running" ]; then
+              echo "| Javna IP | $(ip) |"
+              echo "| Adresa | $SITE |"
+            fi
+            echo ""
+            echo "$msg"
+          } >> "$GITHUB_STEP_SUMMARY"
