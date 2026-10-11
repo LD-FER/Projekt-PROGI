@@ -6,6 +6,18 @@ Projekt iz kolegija Programsko inženjerstvo (FER, 2026./2027.): web aplikacija 
 - **Ploča:** [ArtConnect - razvoj](https://github.com/users/LD-FER/projects/5); pogled „Za preuzimanje” prikazuje slobodne zadatke redom rada
 - **Kvaliteta koda:** [SonarCloud](https://sonarcloud.io/project/overview?id=LD-FER_Projekt-PROGI), pregled u pozadini (jednom tjedno), ne utječe na pull requestove
 
+## Server
+
+**<https://artconnect-fer.duckdns.org>**
+
+Poslužitelj (AWS EC2) nije stalno upaljen, da se štede AWS krediti. Pali ga i gasi bilo koji član tima, bez AWS računa:
+
+1. [Actions → Server](https://github.com/LD-FER/Projekt-PROGI/actions/workflows/server.yml) → **Run workflow**
+2. odaberite `start`, `stop` ili `status` → **Run workflow**
+3. nakon `start` stranica radi za 1–2 minute; stanje i adresa su u sažetku pokretanja
+
+Kad vam više ne treba, ugasite ga (`stop`). Svaku noć u 1:00 UTC poslužitelj se ionako sam ugasi; u razdobljima ocjenjivanja to je isključeno (varijabla repozitorija `ALWAYS_ON=true`). Detalji postavljanja: [poglavlje 6](docs/6-Postavljanje-instalacija-i-konfiguracija.md#63-javno-postavljanje-i-administracija).
+
 ## Kako pokrenuti
 
 Upute za lokalno pokretanje i deploy na EC2: [HOW_TO_RUN.md](HOW_TO_RUN.md). Rad s bazom i Liquibaseom: [db/README.md](db/README.md).
@@ -17,6 +29,8 @@ Upute za lokalno pokretanje i deploy na EC2: [HOW_TO_RUN.md](HOW_TO_RUN.md). Rad
 ## Automatizacija
 
 Workflow [Osvježi Ready](.github/workflows/refresh-ready.yml) nakon zatvaranja ili ponovnog otvaranja issuea prebacuje zadatke iz Backlog u Ready kad su zatvoreni svi zadaci iz njihovog retka „Ovisi o” (i obrnuto). Treba tajnu repozitorija `PROJECT_TOKEN`: classic token s pravom `project`.
+
+Workflow [Server](.github/workflows/server.yml) pali i gasi produkcijski poslužitelj (vidi [Server](#server)). Treba tajne `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (IAM korisnik koji smije samo paliti i gasiti ovu instancu) i `EC2_INSTANCE_ID`.
 
 ## Doprinos
 
